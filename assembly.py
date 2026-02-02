@@ -93,7 +93,8 @@ I_TYPE_SYSTEM = {
 def initialScan(lines):
     mem = 0
     labels = {}
-    text_address = 0x00400000
+    ProCount ={}
+    text_address = 0x00000000
     i = 0
     
     # .data section
@@ -153,6 +154,7 @@ def initialScan(lines):
         elif not line.startswith('.'):
             text_address += 4
         
+        ProcCount[lines[i]] = text_address
         i += 1
     
     return mem, labels
@@ -166,7 +168,7 @@ def main():
     with open(asmPath, 'r') as f:
         lines = f.readlines()
 
-    mem, labels = intialScan(lines)
+    mem, labels = initialScan(lines)
             
 
 if __name__ == "__main__":
