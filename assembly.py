@@ -1,5 +1,19 @@
 import sys
 import os
+import re
+# Data Type Sizes
+DATA_TYPES = {
+    ".byte": {"size": 1,}, 
+    ".half": {"size": 2,},
+    ".word": {"size": 4,}, 
+    ".dword": {"size": 8,}, 
+    ".float": {"size": 4,},
+    ".double": {"size": 8,},
+    ".space": {"size": None,}, # Size is variable
+    ".ascii": {"size": None,}, # Size is variable based on length of the string
+    ".asciz": {"size": None,} # Size is variable, null-terminated
+}
+
 
 R_TYPE = {
     "add":  {"opcode": 0x33, "funct3": 0x0, "funct7": 0x00},
