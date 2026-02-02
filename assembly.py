@@ -88,22 +88,85 @@ I_TYPE_JALR = {
 I_TYPE_SYSTEM = {
     "ecall":  {"opcode": 0x73, "funct3": 0x0, "imm12": 0x000},
     "ebreak": {"opcode": 0x73, "funct3": 0x0, "imm12": 0x001},
+    }
 
-def intialScan():
-    file = open()
-
+def initialScan(lines):
+    mem = 0
+    labels = {}
+    text_address = 0x00400000
+    i = 0
+    
+    # .data section
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        if line.startswith(".data"):
+            i += 1
+            continue
+        
+        # Stop data check
+        if line.startswith(".text") or line.startswith(".global"):
+            break
+        
+        if line and not line.startswith('#'):
+            # ASCII handling
+            if '.ascii' in line:
+                # General ASCII patter I.E "stuff"
+                match = re.search(r'"([^"]*)"', line) 
+                if match:
+                    mem += len(match.group(1))
+                    if '.asciiz' in line:
+                        mem += 1
+            
+            # Handle .space separately
+            elif '.space' in line:
+                parts = line.split()
+                if len(parts) >= 2:
+                    mem += int(parts[1])
+            
+            # Handle fixed-size directives
+            else:
+                for struct, data in DATA_TYPES.items():
+                    if struct in line and data["size"] is not None:
+                        mem += data["size"]
+                        break
+        
+        i += 1
+    
+    # .text section
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        if not line or line.startswith('#') or line.startswith('.global'): # So we can be safe!
+            i += 1
+            continue
+        
+        # Check for labels
+        if ':' in line:
+            label_name = line.split(':')[0].strip()
+            labels[label_name] = text_address # Stores the address and label 
+            # Check for instruction on same line
+            rest = line.split(':', 1)[1].strip()
+            if rest and not rest.startswith('#') and not rest.startswith('.'):
+                text_address += 4
+        # Regular instruction
+        elif not line.startswith('.'):
+            text_address += 4
+        
+        i += 1
+    
+    return mem, labels
 
 def main():
     basePath = sys.argv[1]
     asmFile = sys.argv[2]
     asmPath = os.path.join(basePath, asmFile)
     
-    //Read assembly file
+    #Read assembly file
     with open(asmPath, 'r') as f:
         lines = f.readlines()
 
-            
-            
+    mem, labels = intialScan(lines)
             
 
 if __name__ == "__main__":
